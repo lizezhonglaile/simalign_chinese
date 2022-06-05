@@ -22,6 +22,8 @@ from simalign.utils import get_logger
 LOG = get_logger(__name__)
 
 
+
+
 class EmbeddingLoader(object):
 	def __init__(self, model: str="bert-base-multilingual-cased", device=torch.device('cpu'), layer: int=8):
 		TR_Models = {
