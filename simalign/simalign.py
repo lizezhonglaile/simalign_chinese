@@ -25,7 +25,7 @@ LOG = get_logger(__name__)
 
 
 class EmbeddingLoader(object):
-	def __init__(self, model: str="bert-base-multilingual-cased", device=torch.device('cpu'), layer: int=8):
+	def __init__(self, model: str="bert-base-multilingual-cased", model_path: str = "bert-base-multilingual-cased", device=torch.device('cpu'), layer: int=8):
 		TR_Models = {
 			'bert-base-uncased': (BertModel, BertTokenizer),
 			'bert-base-multilingual-cased': (BertModel, BertTokenizer),
@@ -42,24 +42,13 @@ class EmbeddingLoader(object):
 		self.emb_model = None
 		self.tokenizer = None
 
-		if model in TR_Models:
-			model_class, tokenizer_class = TR_Models[model]
-			self.emb_model = model_class.from_pretrained(model, output_hidden_states=True)
-			self.emb_model.eval()
-			self.emb_model.to(self.device)
-			self.tokenizer = tokenizer_class.from_pretrained(model)
-			LOG.info("Initialized the EmbeddingLoader with model: {}".format(self.model))
-		else:
-			if os.path.isdir(model):
-				# try to load model with auto-classes
-				config = AutoConfig.from_pretrained(model, output_hidden_states=True)
-				self.emb_model = AutoModel.from_pretrained(model, config=config)
-				self.emb_model.eval()
-				self.emb_model.to(self.device)
-				self.tokenizer = AutoTokenizer.from_pretrained(model)
-				LOG.info("Initialized the EmbeddingLoader from path: {}".format(self.model))
-			else:
-				raise ValueError("The model '{}' is not recognised!".format(model))
+		model_class, tokenizer_class = TR_Models[model]
+        self.emb_model = model_class.from_pretrained(model_path, output_hidden_states=True)
+        print("#####Model Path: ", model)
+        self.emb_model.eval()
+        self.emb_model.to(self.device)
+        self.tokenizer = tokenizer_class.from_pretrained(model_path)
+        LOG.info("Initialized the EmbeddingLoader with model: {}".format(self.model))
 
 	def get_embed_list(self, sent_batch: List[List[str]]) -> torch.Tensor:
 		if self.emb_model is not None:
@@ -76,7 +65,7 @@ class EmbeddingLoader(object):
 
 
 class SentenceAligner(object):
-	def __init__(self, model: str = "bert", token_type: str = "bpe", distortion: float = 0.0, matching_methods: str = "mai", device: str = "cpu", layer: int = 8):
+	def __init__(self, model: str = "bert", model_path: str = "bert", token_type: str = "bpe", distortion: float = 0.0, matching_methods: str = "mai", device: str = "cpu", layer: int = 8):
 		model_names = {
 			"bert": "bert-base-multilingual-cased",
 			"xlmr": "xlm-roberta-base"
@@ -91,7 +80,7 @@ class SentenceAligner(object):
 		self.matching_methods = [all_matching_methods[m] for m in matching_methods]
 		self.device = torch.device(device)
 
-		self.embed_loader = EmbeddingLoader(model=self.model, device=self.device, layer=layer)
+		self.embed_loader = EmbeddingLoader(model=self.model, model_path=model_path, device=self.device, layer=layer)
 
 	@staticmethod
 	def get_max_weight_match(sim: np.ndarray) -> np.ndarray:

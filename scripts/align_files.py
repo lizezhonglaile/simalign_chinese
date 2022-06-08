@@ -50,6 +50,7 @@ if __name__ == "__main__":
 	parser.add_argument("L1_path", type=str, help="Lines in the file should be indexed separated by TABs.")
 	parser.add_argument("L2_path", type=str, help="Same format as L1 file.")
 	parser.add_argument("-model", type=str, default="bert", help="choices: ['bert', 'xlmr', '<transformer_model_name>']")
+	parser.add_argument("-model-path", type=str, help="file path to pretrained model.")
 	parser.add_argument("-distortion", type=float, default=0.0)
 	parser.add_argument("--null-align", type=float, default=1.0)
 	parser.add_argument("--token-type", type=str, choices=["bpe", "word"], default="bpe")
@@ -75,7 +76,7 @@ if __name__ == "__main__":
 	device = torch.device(args.device)
 
 	# --------------------------------------------------------
-	embed_loader = EmbeddingLoader(model=args.model, device=device)
+	embed_loader = EmbeddingLoader(model=args.model, model_path=args.model-path, device=device)
 
 	original_paths = [lang for lang in langs]
 	original_corpora = []
